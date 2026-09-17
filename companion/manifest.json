@@ -3,7 +3,7 @@
 	"name": "Avitech Titan 9000",
 	"shortname": "avitech-titan",
 	"description": "Control module for Avitech Titan 9000 devices",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-avitech-titan-9000.git",
 	"bugs": "https://github.com/bitfocus/companion-module-avitech-titan-9000/issues",
