@@ -48,6 +48,8 @@ jobs:
           yarn lint
         env:
           CI: true
+      - name: Run regression tests
+        run: yarn test
 
   # Uncomment this to enable running unit tests
   # test:
