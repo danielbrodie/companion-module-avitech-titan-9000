@@ -1,0 +1,686 @@
+{
+	"revision": "0ff9c4806e17f60f21946532037646d72b96f024",
+	"scenarios": [
+		{
+			"name": "connected preset recall and command bytes",
+			"steps": [
+				["connect"],
+				["receive", "a55aaa55110000018001000000ff020101"],
+				["recall", 1, 1],
+				["recall", 99, 14],
+				["command", "XP 003000000 L preset2.GP3\r\n"]
+			],
+			"expected": {
+				"trace": [
+					[
+						"variables",
+						{
+							"preset_number": 1,
+							"group_number": 1,
+							"connection_state": "Disconnected"
+						}
+					],
+					["status", "connecting", null],
+					["status", "connecting", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connecting"
+						}
+					],
+					["log", "info", "TCP socket connected to 127.0.0.1:20036"],
+					["log", "debug", "Received data: a55aaa55110000018001000000ff020101"],
+					["status", "ok", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connected"
+						}
+					],
+					["log", "info", "Connected to Avitech Titan 9000 at 127.0.0.1:20036"],
+					["log", "debug", "Socket ID: 1, Machine Type: Titan 9000"],
+					["log", "debug", "Recalling preset: preset1.GP1"],
+					["log", "debug", "Command: XP 001000000 L preset1.GP1"],
+					["log", "debug", "Sending command: XP 001000000 L preset1.GP1"],
+					[
+						"log",
+						"debug",
+						"Binary format: 55aa5aa5290000021300ff01fe00585020303031303030303030204c20707265736574312e475031f9"
+					],
+					["log", "debug", "Checksum: 0xF9"],
+					["log", "debug", "Command sent successfully"],
+					[
+						"variables",
+						{
+							"preset_number": 1,
+							"group_number": 1
+						}
+					],
+					["feedback", "preset_loaded"],
+					["log", "debug", "Recalling preset: preset14.GP99"],
+					["log", "debug", "Command: XP 099000000 L preset14.GP99"],
+					["log", "debug", "Sending command: XP 099000000 L preset14.GP99"],
+					[
+						"log",
+						"debug",
+						"Binary format: 55aa5aa52b0000021300ff01fe00585020303939303030303030204c2070726573657431342e4750393981"
+					],
+					["log", "debug", "Checksum: 0x81"],
+					["log", "debug", "Command sent successfully"],
+					[
+						"variables",
+						{
+							"preset_number": 14,
+							"group_number": 99
+						}
+					],
+					["feedback", "preset_loaded"],
+					["log", "debug", "Sending command: XP 003000000 L preset2.GP3"],
+					[
+						"log",
+						"debug",
+						"Binary format: 55aa5aa5290000021300ff01fe00585020303033303030303030204c20707265736574322e475033fe"
+					],
+					["log", "debug", "Checksum: 0xFE"],
+					["log", "debug", "Command sent successfully"]
+				],
+				"packets": [
+					"55aa5aa5290000021300ff01fe00585020303031303030303030204c20707265736574312e475031f9",
+					"55aa5aa52b0000021300ff01fe00585020303939303030303030204c2070726573657431342e4750393981",
+					"55aa5aa5290000021300ff01fe00585020303033303030303030204c20707265736574322e475033fe"
+				],
+				"variables": {
+					"preset_number": 14,
+					"group_number": 99,
+					"connection_state": "Connected"
+				},
+				"feedback": true
+			}
+		},
+		{
+			"name": "offline preset tracking",
+			"steps": [["recall", 3, 2]],
+			"expected": {
+				"trace": [
+					[
+						"variables",
+						{
+							"preset_number": 1,
+							"group_number": 1,
+							"connection_state": "Disconnected"
+						}
+					],
+					["status", "connecting", null],
+					["log", "debug", "Recalling preset: preset2.GP3"],
+					["log", "debug", "Command: XP 003000000 L preset2.GP3"],
+					["log", "warn", "Cannot send command, not connected to device"],
+					[
+						"variables",
+						{
+							"preset_number": 2,
+							"group_number": 3
+						}
+					],
+					["feedback", "preset_loaded"]
+				],
+				"packets": [],
+				"variables": {
+					"preset_number": 2,
+					"group_number": 3,
+					"connection_state": "Disconnected"
+				},
+				"feedback": true
+			}
+		},
+		{
+			"name": "keepalive gating and disconnect",
+			"steps": [
+				["connect"],
+				["advance", 420000],
+				["receive", "a55aaa55110000018001000000ff020101"],
+				["advance", 419999],
+				["advance", 1],
+				["advance", 420000],
+				["end"],
+				["advance", 840000]
+			],
+			"expected": {
+				"trace": [
+					[
+						"variables",
+						{
+							"preset_number": 1,
+							"group_number": 1,
+							"connection_state": "Disconnected"
+						}
+					],
+					["status", "connecting", null],
+					["status", "connecting", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connecting"
+						}
+					],
+					["log", "info", "TCP socket connected to 127.0.0.1:20036"],
+					["log", "debug", "Received data: a55aaa55110000018001000000ff020101"],
+					["status", "ok", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connected"
+						}
+					],
+					["log", "info", "Connected to Avitech Titan 9000 at 127.0.0.1:20036"],
+					["log", "debug", "Socket ID: 1, Machine Type: Titan 9000"],
+					["log", "debug", "Sending keep-alive packet"],
+					["log", "debug", "Keep-alive packet sent"],
+					["log", "debug", "Sending keep-alive packet"],
+					["log", "debug", "Keep-alive packet sent"],
+					["status", "disconnected", null],
+					[
+						"variables",
+						{
+							"connection_state": "Disconnected"
+						}
+					]
+				],
+				"packets": ["55aa5aa50f0000000000ff01fe000b", "55aa5aa50f0000000000ff01fe000b"],
+				"variables": {
+					"preset_number": 1,
+					"group_number": 1,
+					"connection_state": "Disconnected"
+				},
+				"feedback": true
+			}
+		},
+		{
+			"name": "command errors retain connection",
+			"steps": [
+				["connect"],
+				["receive", "a55aaa55110000018001000000ff020101"],
+				["receive", "0200100077001a00ff00"],
+				["recall", 1, 2]
+			],
+			"expected": {
+				"trace": [
+					[
+						"variables",
+						{
+							"preset_number": 1,
+							"group_number": 1,
+							"connection_state": "Disconnected"
+						}
+					],
+					["status", "connecting", null],
+					["status", "connecting", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connecting"
+						}
+					],
+					["log", "info", "TCP socket connected to 127.0.0.1:20036"],
+					["log", "debug", "Received data: a55aaa55110000018001000000ff020101"],
+					["status", "ok", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connected"
+						}
+					],
+					["log", "info", "Connected to Avitech Titan 9000 at 127.0.0.1:20036"],
+					["log", "debug", "Socket ID: 1, Machine Type: Titan 9000"],
+					["log", "debug", "Received data: 0200100077001a00ff00"],
+					["log", "error", "Command error: Command checksum error (0x02)"],
+					["status", "unknown_error", "Command error: Command checksum error (0x02)"],
+					["log", "error", "Command error: Reserved error code (0x10)"],
+					["status", "unknown_error", "Command error: Reserved error code (0x10)"],
+					["log", "error", "Command error: Unknown error (0x77)"],
+					["status", "unknown_error", "Command error: Unknown error (0x77)"],
+					["log", "error", "Command error: Invalid input parameter (0x1a)"],
+					["status", "unknown_error", "Command error: Invalid input parameter (0x1a)"],
+					["log", "error", "Command error: Undefined error (0xff)"],
+					["status", "unknown_error", "Command error: Undefined error (0xff)"],
+					["log", "debug", "Recalling preset: preset2.GP1"],
+					["log", "debug", "Command: XP 001000000 L preset2.GP1"],
+					["log", "debug", "Sending command: XP 001000000 L preset2.GP1"],
+					[
+						"log",
+						"debug",
+						"Binary format: 55aa5aa5290000021300ff01fe00585020303031303030303030204c20707265736574322e475031fa"
+					],
+					["log", "debug", "Checksum: 0xFA"],
+					["log", "debug", "Command sent successfully"],
+					[
+						"variables",
+						{
+							"preset_number": 2,
+							"group_number": 1
+						}
+					],
+					["feedback", "preset_loaded"]
+				],
+				"packets": ["55aa5aa5290000021300ff01fe00585020303031303030303030204c20707265736574322e475031fa"],
+				"variables": {
+					"preset_number": 2,
+					"group_number": 1,
+					"connection_state": "Connected"
+				},
+				"feedback": true
+			}
+		},
+		{
+			"name": "framed connection rejection",
+			"steps": [
+				["connect"],
+				["receive", "a55aaa550e0000018000110000ffa55aaa55110000018001000000ff020101"],
+				["recall", 3, 2]
+			],
+			"expected": {
+				"trace": [
+					[
+						"variables",
+						{
+							"preset_number": 1,
+							"group_number": 1,
+							"connection_state": "Disconnected"
+						}
+					],
+					["status", "connecting", null],
+					["status", "connecting", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connecting"
+						}
+					],
+					["log", "info", "TCP socket connected to 127.0.0.1:20036"],
+					["log", "debug", "Received data: a55aaa550e0000018000110000ffa55aaa55110000018001000000ff020101"],
+					[
+						"variables",
+						{
+							"connection_state": "Disconnected"
+						}
+					],
+					["status", "connection_failure", "Connection failed: Maximum number of connections reached (limit is 3)"],
+					[
+						"variables",
+						{
+							"connection_state": "Error"
+						}
+					],
+					["log", "error", "Connection failed: Maximum number of connections reached (limit is 3)"],
+					["log", "debug", "Recalling preset: preset2.GP3"],
+					["log", "debug", "Command: XP 003000000 L preset2.GP3"],
+					["log", "warn", "Cannot send command, not connected to device"],
+					[
+						"variables",
+						{
+							"preset_number": 2,
+							"group_number": 3
+						}
+					],
+					["feedback", "preset_loaded"]
+				],
+				"packets": [],
+				"variables": {
+					"preset_number": 2,
+					"group_number": 3,
+					"connection_state": "Error"
+				},
+				"feedback": true
+			}
+		},
+		{
+			"name": "bare connection rejection",
+			"steps": [
+				["connect"],
+				["receive", "a55aaa55110000018001000000ff020101"],
+				["receive", "1100a55aaa55110000018001000000ff020101"],
+				["advance", 420000]
+			],
+			"expected": {
+				"trace": [
+					[
+						"variables",
+						{
+							"preset_number": 1,
+							"group_number": 1,
+							"connection_state": "Disconnected"
+						}
+					],
+					["status", "connecting", null],
+					["status", "connecting", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connecting"
+						}
+					],
+					["log", "info", "TCP socket connected to 127.0.0.1:20036"],
+					["log", "debug", "Received data: a55aaa55110000018001000000ff020101"],
+					["status", "ok", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connected"
+						}
+					],
+					["log", "info", "Connected to Avitech Titan 9000 at 127.0.0.1:20036"],
+					["log", "debug", "Socket ID: 1, Machine Type: Titan 9000"],
+					["log", "debug", "Received data: 1100a55aaa55110000018001000000ff020101"],
+					[
+						"variables",
+						{
+							"connection_state": "Disconnected"
+						}
+					],
+					[
+						"status",
+						"connection_failure",
+						"Command error: Number of TCP connections has exceeded system limit (limit is 3) (0x11)"
+					],
+					[
+						"variables",
+						{
+							"connection_state": "Error"
+						}
+					],
+					["log", "error", "Command error: Number of TCP connections has exceeded system limit (limit is 3) (0x11)"]
+				],
+				"packets": [],
+				"variables": {
+					"preset_number": 1,
+					"group_number": 1,
+					"connection_state": "Error"
+				},
+				"feedback": true
+			}
+		},
+		{
+			"name": "reconnect clears partial reply",
+			"steps": [
+				["connect"],
+				["receive", "a55aaa55110000018001000000ff020101"],
+				["receive", "02"],
+				["end"],
+				["connect"],
+				["receive", "a55aaa55110000018001000000ff020101"],
+				["recall", 3, 2]
+			],
+			"expected": {
+				"trace": [
+					[
+						"variables",
+						{
+							"preset_number": 1,
+							"group_number": 1,
+							"connection_state": "Disconnected"
+						}
+					],
+					["status", "connecting", null],
+					["status", "connecting", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connecting"
+						}
+					],
+					["log", "info", "TCP socket connected to 127.0.0.1:20036"],
+					["log", "debug", "Received data: a55aaa55110000018001000000ff020101"],
+					["status", "ok", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connected"
+						}
+					],
+					["log", "info", "Connected to Avitech Titan 9000 at 127.0.0.1:20036"],
+					["log", "debug", "Socket ID: 1, Machine Type: Titan 9000"],
+					["log", "debug", "Received data: 02"],
+					["status", "disconnected", null],
+					[
+						"variables",
+						{
+							"connection_state": "Disconnected"
+						}
+					],
+					["status", "connecting", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connecting"
+						}
+					],
+					["log", "info", "TCP socket connected to 127.0.0.1:20036"],
+					["log", "debug", "Received data: a55aaa55110000018001000000ff020101"],
+					["status", "ok", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connected"
+						}
+					],
+					["log", "info", "Connected to Avitech Titan 9000 at 127.0.0.1:20036"],
+					["log", "debug", "Socket ID: 1, Machine Type: Titan 9000"],
+					["log", "debug", "Recalling preset: preset2.GP3"],
+					["log", "debug", "Command: XP 003000000 L preset2.GP3"],
+					["log", "debug", "Sending command: XP 003000000 L preset2.GP3"],
+					[
+						"log",
+						"debug",
+						"Binary format: 55aa5aa5290000021300ff01fe00585020303033303030303030204c20707265736574322e475033fe"
+					],
+					["log", "debug", "Checksum: 0xFE"],
+					["log", "debug", "Command sent successfully"],
+					[
+						"variables",
+						{
+							"preset_number": 2,
+							"group_number": 3
+						}
+					],
+					["feedback", "preset_loaded"]
+				],
+				"packets": ["55aa5aa5290000021300ff01fe00585020303033303030303030204c20707265736574322e475033fe"],
+				"variables": {
+					"preset_number": 2,
+					"group_number": 3,
+					"connection_state": "Connected"
+				},
+				"feedback": true
+			}
+		},
+		{
+			"name": "socket failure and restart",
+			"steps": [
+				["connect"],
+				["receive", "a55aaa55110000018001000000ff020101"],
+				["receive", "02"],
+				["error", "connection reset"],
+				["restart"],
+				["connect"],
+				["receive", "a55aaa55110000018001000000ff020101"],
+				["advance", 420000],
+				["destroy"]
+			],
+			"expected": {
+				"trace": [
+					[
+						"variables",
+						{
+							"preset_number": 1,
+							"group_number": 1,
+							"connection_state": "Disconnected"
+						}
+					],
+					["status", "connecting", null],
+					["status", "connecting", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connecting"
+						}
+					],
+					["log", "info", "TCP socket connected to 127.0.0.1:20036"],
+					["log", "debug", "Received data: a55aaa55110000018001000000ff020101"],
+					["status", "ok", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connected"
+						}
+					],
+					["log", "info", "Connected to Avitech Titan 9000 at 127.0.0.1:20036"],
+					["log", "debug", "Socket ID: 1, Machine Type: Titan 9000"],
+					["log", "debug", "Received data: 02"],
+					["status", "connection_failure", null],
+					[
+						"variables",
+						{
+							"connection_state": "Error"
+						}
+					],
+					["log", "error", "TCP error: connection reset"],
+					[
+						"variables",
+						{
+							"connection_state": "Disconnected"
+						}
+					],
+					["status", "connecting", null],
+					["status", "connecting", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connecting"
+						}
+					],
+					["log", "info", "TCP socket connected to 127.0.0.1:20036"],
+					["log", "debug", "Received data: a55aaa55110000018001000000ff020101"],
+					["status", "ok", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connected"
+						}
+					],
+					["log", "info", "Connected to Avitech Titan 9000 at 127.0.0.1:20036"],
+					["log", "debug", "Socket ID: 1, Machine Type: Titan 9000"],
+					["log", "debug", "Sending keep-alive packet"],
+					["log", "debug", "Keep-alive packet sent"],
+					["log", "debug", "destroy"],
+					[
+						"variables",
+						{
+							"connection_state": "Disconnected"
+						}
+					]
+				],
+				"packets": ["55aa5aa50f0000000000ff01fe000b"],
+				"variables": {
+					"preset_number": 1,
+					"group_number": 1,
+					"connection_state": "Disconnected"
+				},
+				"feedback": true
+			}
+		},
+		{
+			"name": "malformed reply",
+			"steps": [["connect"], ["receive", "a55ba55aaa55110000018001000000ff020101"]],
+			"expected": {
+				"trace": [
+					[
+						"variables",
+						{
+							"preset_number": 1,
+							"group_number": 1,
+							"connection_state": "Disconnected"
+						}
+					],
+					["status", "connecting", null],
+					["status", "connecting", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connecting"
+						}
+					],
+					["log", "info", "TCP socket connected to 127.0.0.1:20036"],
+					["log", "debug", "Received data: a55ba55aaa55110000018001000000ff020101"],
+					[
+						"variables",
+						{
+							"connection_state": "Disconnected"
+						}
+					],
+					["status", "connection_failure", "Invalid reply header"],
+					[
+						"variables",
+						{
+							"connection_state": "Error"
+						}
+					],
+					["log", "error", "Invalid reply header"]
+				],
+				"packets": [],
+				"variables": {
+					"preset_number": 1,
+					"group_number": 1,
+					"connection_state": "Error"
+				},
+				"feedback": true
+			}
+		},
+		{
+			"name": "unknown frame and fragmented handshake",
+			"steps": [
+				["connect"],
+				["receive", "a55aaa550e0000021300020000ffa55aaa5511000001"],
+				["receive", "8001000000ff020101"]
+			],
+			"expected": {
+				"trace": [
+					[
+						"variables",
+						{
+							"preset_number": 1,
+							"group_number": 1,
+							"connection_state": "Disconnected"
+						}
+					],
+					["status", "connecting", null],
+					["status", "connecting", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connecting"
+						}
+					],
+					["log", "info", "TCP socket connected to 127.0.0.1:20036"],
+					["log", "debug", "Received data: a55aaa550e0000021300020000ffa55aaa5511000001"],
+					["log", "debug", "Ignoring unrecognized framed reply: a55aaa550e0000021300020000ff"],
+					["log", "debug", "Received data: 8001000000ff020101"],
+					["status", "ok", null],
+					[
+						"variables",
+						{
+							"connection_state": "Connected"
+						}
+					],
+					["log", "info", "Connected to Avitech Titan 9000 at 127.0.0.1:20036"],
+					["log", "debug", "Socket ID: 1, Machine Type: Titan 9000"]
+				],
+				"packets": [],
+				"variables": {
+					"preset_number": 1,
+					"group_number": 1,
+					"connection_state": "Connected"
+				},
+				"feedback": true
+			}
+		}
+	]
+}
